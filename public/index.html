@@ -166,7 +166,7 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
       <span class="forgot-link" onclick="goTab('forgot')">Esqueci minha senha</span>
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);text-align:center">
         <p style="font-size:12px;color:#555;margin-bottom:10px">Ainda não tem uma conta?</p>
-        <button class="btn-cadastro" onclick="goTab('register')">CADASTRAR — R$ 19,90/MÊS</button>
+        <button class="btn-cadastro" onclick="goTab('register')">CADASTRE-SE GRÁTIS</button>
       </div>
     </div>
     <div id="pane-register" class="pane">
@@ -307,10 +307,7 @@ async function checkAcesso(email) {
 (async function checkSession(){
   const { data: { session } } = await sb.auth.getSession();
   if(session){
-    const email = session.user.email;
-    const acesso = await checkAcesso(email);
-    if(!acesso.ok){ await sb.auth.signOut(); return; }
-    const name = session.user.user_metadata.full_name || email;
+    const name = session.user.user_metadata.full_name || session.user.email;
     document.getElementById("av").textContent = name.slice(0,2).toUpperCase();
     document.getElementById("uname").textContent = name;
     document.getElementById("page-login").style.display = "none";
@@ -336,12 +333,7 @@ async function doLogin(){
   btn.disabled=true;btn.textContent="Entrando...";
   const {data,error} = await sb.auth.signInWithPassword({email,password:pass});
   if(error){btn.disabled=false;btn.textContent="ENTRAR";err.textContent="E-mail ou senha incorretos.";err.style.display="block";return;}
-  const acesso = await checkAcesso(email);
-  if(!acesso.ok){
-    await sb.auth.signOut();
-    btn.disabled=false;btn.textContent="ENTRAR";
-    err.textContent=acesso.msg;err.style.display="block";return;
-  }
+
   btn.disabled=false;btn.textContent="ENTRAR";
   const name = data.user.user_metadata.full_name || email;
   document.getElementById("av").textContent=name.slice(0,2).toUpperCase();
@@ -454,14 +446,11 @@ async function callGemini(style){
 async function generate(){
   if(!imgB64)return;
 
-  // Trial - verifica se já usou 2 prompts gratuitos
-  const logado = (await sb.auth.getSession()).data.session;
-  if(!logado){
-    let usados = parseInt(localStorage.getItem("pf_trial")||"0");
-    if(usados >= 2){
-      showTrialModal();
-      return;
-    }
+  // Trial - verifica se já usou 4 prompts gratuitos
+  let usados = parseInt(localStorage.getItem("pf_trial")||"0");
+  if(usados >= 4){
+    showTrialModal();
+    return;
   }
   document.getElementById("area-prev").style.display="none";
   document.getElementById("area-load").style.display="block";
@@ -476,12 +465,9 @@ async function generate(){
     document.getElementById("txt-ls").textContent=ls;
     document.getElementById("rsub").textContent="Aspect ratio "+ratio+" · Escolha o estilo e cole no Nano Banana";
     saveHist({ed,ls,ratio,imgSrc,date:new Date().toLocaleDateString("pt-BR"),time:new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})});
-    // Incrementa contador trial se não estiver logado
-    const sessaoAtual = (await sb.auth.getSession()).data.session;
-    if(!sessaoAtual){
-      let usados = parseInt(localStorage.getItem("pf_trial")||"0");
-      localStorage.setItem("pf_trial", usados + 1);
-    }
+    // Incrementa contador de prompts usados
+    let usadosAtual = parseInt(localStorage.getItem("pf_trial")||"0");
+    localStorage.setItem("pf_trial", usadosAtual + 1);
     document.getElementById("area-load").style.display="none";
     document.getElementById("isc-upload").classList.remove("on");
     document.getElementById("isc-result").classList.add("on");
@@ -525,7 +511,7 @@ function copyHist(btn,b64){
   <div class="trial-modal">
     <div class="trial-icon">⚡</div>
     <div class="trial-title">LIMITE GRATUITO</div>
-    <div class="trial-desc">Você usou seus <strong style="color:#f5c400">2 prompts gratuitos</strong>.<br>Assine agora e gere prompts ilimitados por apenas <strong style="color:#f5c400">R$ 19,90/mês</strong>.</div>
+    <div class="trial-desc">Você usou seus <strong style="color:#f5c400">4 prompts gratuitos</strong>.<br>Assine agora e gere prompts ilimitados por apenas <strong style="color:#f5c400">R$ 19,90/mês</strong>.</div>
     <button class="trial-btn" onclick="goTrialCadastro()">ASSINAR AGORA — R$ 19,90/MÊS</button>
     <span class="trial-close" onclick="closeTrialModal()">Agora não</span>
   </div>
