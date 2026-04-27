@@ -121,6 +121,31 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
   .main-content{padding:20px 16px}
   .login-card{width:100%;border-radius:0;min-height:100vh;border:none}
 }
+
+/* FREEMIUM BADGE */
+.usage-badge{display:inline-flex;align-items:center;gap:6px;background:rgba(245,196,0,0.08);border:1px solid rgba(245,196,0,0.2);border-radius:20px;padding:4px 12px;font-size:11px;color:#888;font-weight:500}
+.usage-badge span{color:#f5c400;font-weight:700}
+.usage-badge.warn{background:rgba(229,62,62,0.08);border-color:rgba(229,62,62,0.3)}
+.usage-badge.warn span{color:#fc8181}
+
+/* PAYWALL MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.88);z-index:999;display:none;align-items:center;justify-content:center;padding:24px;backdrop-filter:blur(8px)}
+.modal-overlay.on{display:flex}
+.modal-box{background:#0a0a0a;border:1px solid rgba(245,196,0,0.25);border-radius:20px;padding:40px 32px;max-width:400px;width:100%;text-align:center;position:relative}
+.modal-box::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#f5c400,#c89a00);border-radius:20px 20px 0 0}
+.modal-icon{font-size:48px;margin-bottom:16px;display:block}
+.modal-title{font-size:22px;font-weight:800;letter-spacing:2px;color:#f5c400;margin-bottom:8px}
+.modal-text{font-size:13px;color:#666;line-height:1.7;margin-bottom:20px}
+.modal-features{text-align:left;background:rgba(245,196,0,0.04);border:1px solid rgba(245,196,0,0.1);border-radius:10px;padding:14px 18px;margin-bottom:20px;display:flex;flex-direction:column;gap:8px}
+.modal-feat{font-size:12px;color:#888;display:flex;align-items:center;gap:8px}
+.modal-feat::before{content:'✓';color:#f5c400;font-weight:700;flex-shrink:0}
+.modal-price{margin-bottom:20px}
+.modal-price strong{font-size:32px;font-weight:800;color:#fff}
+.modal-price span{font-size:13px;color:#555}
+.btn-assinar{width:100%;padding:15px;border-radius:10px;background:#f5c400;color:#000;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;transition:opacity .2s;margin-bottom:10px;display:block;text-decoration:none;box-sizing:border-box}
+.btn-assinar:hover{opacity:.88}
+.btn-modal-fechar{background:none;border:none;color:#444;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;text-decoration:underline}
+.btn-modal-fechar:hover{color:#666}
 </style>
 </head>
 <body>
@@ -146,7 +171,7 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
       <span class="forgot-link" onclick="goTab('forgot')">Esqueci minha senha</span>
       <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);text-align:center">
         <p style="font-size:12px;color:#555;margin-bottom:10px">Ainda não tem uma conta?</p>
-        <button class="btn-cadastro" onclick="goTab('register')">CADASTRAR — R$ 19,90/MÊS</button>
+        <button class="btn-cadastro" onclick="goTab('register')">CRIAR CONTA GRÁTIS</button>
       </div>
     </div>
     <div id="pane-register" class="pane">
@@ -155,7 +180,7 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
       <input id="r-name" class="field" type="text" placeholder="Nome completo"/>
       <input id="r-email" class="field" type="email" placeholder="E-mail"/>
       <input id="r-pass" class="field" type="password" placeholder="Senha (mín. 6 caracteres)"/>
-      <button class="btn-main" onclick="doRegister()">ASSINAR R$ 19,90/MÊS</button>
+      <button class="btn-main" onclick="doRegister()">CRIAR CONTA GRÁTIS</button>
     </div>
     <div id="pane-forgot" class="pane">
       <div id="f-err" class="err-msg"></div>
@@ -167,6 +192,25 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
   </div>
 </div>
 
+<!-- PAYWALL MODAL -->
+<div class="modal-overlay" id="modal-paywall">
+  <div class="modal-box">
+    <span class="modal-icon">🚀</span>
+    <div class="modal-title">LIMITE GRATUITO</div>
+    <div class="modal-text">Você usou suas 2 gerações gratuitas.<br>Assine o Promptfy para continuar gerando prompts ilimitados!</div>
+    <div class="modal-features">
+      <div class="modal-feat">Prompts ilimitados todo mês</div>
+      <div class="modal-feat">2 estilos: Editorial + Lifestyle</div>
+      <div class="modal-feat">Aspect ratio: 4:5, 1:1, 9:16, 16:9</div>
+      <div class="modal-feat">Histórico completo de prompts</div>
+      <div class="modal-feat">Otimizado para Nano Banana</div>
+    </div>
+    <div class="modal-price"><strong>R$ 19,90</strong><span> /mês</span></div>
+    <a href="https://pag.ae/81JL3KGg7" target="_blank" class="btn-assinar">⚡ ASSINAR AGORA</a>
+    <button class="btn-modal-fechar" onclick="fecharModal()">Continuar sem assinar</button>
+  </div>
+</div>
+
 <!-- APP -->
 <div id="page-app">
   <div class="topbar">
@@ -174,6 +218,7 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
     <div class="top-right">
       <div class="avatar" id="av">?</div>
       <span class="uname" id="uname"></span>
+      <div class="usage-badge" id="usage-badge"><span id="usage-count">2</span> gerações restantes</div>
       <button class="logout-btn" onclick="doLogout()">Sair</button>
     </div>
   </div>
@@ -250,7 +295,42 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 let ratio="4:5",imgB64="",imgType="",imgSrc="";
 let prompts={ed:"",ls:""};
 let hist=[];
+let currentUserEmail="";
 try{hist=JSON.parse(localStorage.getItem("pf_hist")||"[]");}catch(e){}
+
+const LIMITE_GRATIS = 2; // gerações grátis
+
+function getGeneracoes(){
+  try{ return parseInt(localStorage.getItem("pf_geracoes")||"0"); }catch(e){ return 0; }
+}
+function incGeneracoes(){
+  const n = getGeneracoes() + 1;
+  try{ localStorage.setItem("pf_geracoes", String(n)); }catch(e){}
+  return n;
+}
+function isAssinante(){
+  try{ return localStorage.getItem("pf_assinante")==="true"; }catch(e){ return false; }
+}
+function setAssinante(v){
+  try{ localStorage.setItem("pf_assinante", v ? "true" : "false"); }catch(e){}
+}
+function atualizarBadge(){
+  const badge = document.getElementById("usage-badge");
+  const count = document.getElementById("usage-count");
+  if(!badge||!count) return;
+  if(isAssinante()){
+    badge.innerHTML="<span>∞</span> ilimitado";
+    badge.classList.remove("warn");
+    return;
+  }
+  const restantes = Math.max(0, LIMITE_GRATIS - getGeneracoes());
+  count.textContent = restantes;
+  badge.innerHTML = "<span>"+restantes+"</span> gera"+(restantes===1?"ção":"ções")+" grátis";
+  if(restantes === 0) badge.classList.add("warn");
+  else badge.classList.remove("warn");
+}
+function mostrarModal(){ document.getElementById("modal-paywall").classList.add("on"); }
+function fecharModal(){ document.getElementById("modal-paywall").classList.remove("on"); }
 
 // Bolhas flutuantes
 (function(){
@@ -293,8 +373,12 @@ async function checkAcesso(email) {
     const name = session.user.user_metadata.full_name || email;
     document.getElementById("av").textContent = name.slice(0,2).toUpperCase();
     document.getElementById("uname").textContent = name;
+    currentUserEmail = email;
+    // Verifica se é assinante ativo
+    setAssinante(acesso.ok);
     document.getElementById("page-login").style.display = "none";
     document.getElementById("page-app").style.display = "flex";
+    atualizarBadge();
     renderHist();
   }
 })();
@@ -312,7 +396,7 @@ async function doLogin(){
   const btn=document.getElementById("l-btn");
   err.style.display="none";
   if(!email||!pass){err.textContent="Preencha e-mail e senha.";err.style.display="block";return;}
-  if(email==="admin@promptfy.com"&&pass==="Promptfy@2025"){document.getElementById("av").textContent="AD";document.getElementById("uname").textContent="Admin";document.getElementById("page-login").style.display="none";document.getElementById("page-app").style.display="flex";renderHist();return;}
+  if(email==="admin@promptfy.com"&&pass==="Promptfy@2025"){setAssinante(true);document.getElementById("av").textContent="AD";document.getElementById("uname").textContent="Admin";document.getElementById("page-login").style.display="none";document.getElementById("page-app").style.display="flex";atualizarBadge();renderHist();return;}
   btn.disabled=true;btn.textContent="Entrando...";
   const {data,error} = await sb.auth.signInWithPassword({email,password:pass});
   if(error){btn.disabled=false;btn.textContent="ENTRAR";err.textContent="E-mail ou senha incorretos.";err.style.display="block";return;}
@@ -323,11 +407,15 @@ async function doLogin(){
     err.textContent=acesso.msg;err.style.display="block";return;
   }
   btn.disabled=false;btn.textContent="ENTRAR";
+  currentUserEmail = email;
+  // Verifica plano: se checkAcesso retornou ok = assinante ativo
+  setAssinante(true); // acesso.ok já foi verificado acima
   const name = data.user.user_metadata.full_name || email;
   document.getElementById("av").textContent=name.slice(0,2).toUpperCase();
   document.getElementById("uname").textContent=name;
   document.getElementById("page-login").style.display="none";
   document.getElementById("page-app").style.display="flex";
+  atualizarBadge();
   renderHist();
 }
 
@@ -344,9 +432,10 @@ async function doRegister(){
   const {error} = await sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:window.location.origin}});
   btn.disabled=false;btn.textContent="ASSINAR R$ 19,90/MÊS";
   if(error){err.textContent=error.message;err.style.display="block";return;}
-  suc.textContent="✅ Cadastro realizado! Redirecionando para o pagamento...";
+  suc.innerHTML="✅ Conta criada com sucesso!<br><small style='color:#555'>Você tem 2 gerações grátis. <a href='https://pag.ae/81JL3KGg7' target='_blank' style='color:#f5c400'>Assine para acesso ilimitado →</a></small>";
   suc.style.display="block";
-  setTimeout(()=>{ window.open("https://pag.ae/81JL3KGg7","_blank"); },1500);
+  // Reset geracoes para novo usuário
+  try{ localStorage.setItem("pf_geracoes","0"); }catch(e){}
 }
 
 async function doForgot(){
@@ -363,6 +452,8 @@ async function doForgot(){
 
 async function doLogout(){
   await sb.auth.signOut();
+  currentUserEmail="";
+  setAssinante(false);
   imgB64="";imgType="";imgSrc="";prompts={ed:"",ls:""};
   document.getElementById("l-email").value="";
   document.getElementById("l-pass").value="";
@@ -433,6 +524,11 @@ async function callGemini(style){
 
 async function generate(){
   if(!imgB64)return;
+  // Verifica limite freemium
+  if(!isAssinante() && getGeneracoes() >= LIMITE_GRATIS){
+    mostrarModal();
+    return;
+  }
   document.getElementById("area-prev").style.display="none";
   document.getElementById("area-load").style.display="block";
   document.getElementById("sl1").classList.add("done");
@@ -446,6 +542,11 @@ async function generate(){
     document.getElementById("txt-ls").textContent=ls;
     document.getElementById("rsub").textContent="Aspect ratio "+ratio+" · Escolha o estilo e cole no Nano Banana";
     saveHist({ed,ls,ratio,imgSrc,date:new Date().toLocaleDateString("pt-BR"),time:new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})});
+    if(!isAssinante()){ incGeneracoes(); atualizarBadge(); }
+    // Mostra modal se atingiu o limite após essa geração
+    if(!isAssinante() && getGeneracoes() >= LIMITE_GRATIS){
+      setTimeout(()=>mostrarModal(), 2000);
+    }
     document.getElementById("area-load").style.display="none";
     document.getElementById("isc-upload").classList.remove("on");
     document.getElementById("isc-result").classList.add("on");
