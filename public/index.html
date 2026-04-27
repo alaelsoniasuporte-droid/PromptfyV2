@@ -351,19 +351,17 @@ function fecharModal(){ document.getElementById("modal-paywall").classList.remov
 })();
 
 async function checkAcesso(email) {
-  try {
-    const resp = await fetch("/api/check-acesso", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ email })
-    });
-    const data = await resp.json();
-    if (data.ativo) return { ok: true };
-    return { ok: false, msg: data.msg || "Acesso inativo. Verifique sua assinatura." };
-  } catch(e) {
-    // Se não conseguir verificar, libera como grátis
-    return { ok: false, msg: "Erro ao verificar acesso." };
+  const { data, error } = await sb.from("usuarios").select("ativo,data_expiracao").eq("email", email).single();
+  if(error || !data) return { ok: false, msg: "Acesso não encontrado. Verifique se o pagamento foi confirmado." };
+  if(data.data_expiracao) {
+    const expiracao = new Date(data.data_expiracao);
+    if(new Date() > expiracao && data.ativo) {
+      await sb.from("usuarios").update({ ativo: false }).eq("email", email);
+      return { ok: false, msg: "Seu acesso expirou. Renove sua assinatura para continuar." };
+    }
   }
+  if(!data.ativo) return { ok: false, msg: "Seu acesso está inativo. Entre em contato ou renove sua assinatura." };
+  return { ok: true };
 }
 
 (async function checkSession(){
