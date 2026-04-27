@@ -1,0 +1,534 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Promptfy</title>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">function showTrialModal(){
+  document.getElementById("trial-overlay").classList.add("on");
+}
+function closeTrialModal(){
+  document.getElementById("trial-overlay").classList.remove("on");
+}
+function goTrialCadastro(){
+  closeTrialModal();
+  goTab("register");
+}
+</script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden}
+
+/* LOGIN PAGE */
+#page-login{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;overflow:hidden;background:#000}
+#blob{display:none}.bubble{position:fixed;border-radius:50%;pointer-events:none;z-index:0;animation:floatBubble linear infinite}.bubble-main{position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#f5c400 0%,#c89a00 40%,#7a5e00 70%,transparent 100%);opacity:0.12;pointer-events:none;z-index:0;filter:blur(12px);top:50%;left:50%;transform:translate(-50%,-50%)}@keyframes floatBubble{0%{transform:translateY(0) scale(1);opacity:0.08}50%{transform:translateY(-40px) scale(1.05);opacity:0.15}100%{transform:translateY(0) scale(1);opacity:0.08}}
+.login-card{position:relative;z-index:2;background:rgba(10,10,10,0.9);border:1px solid rgba(245,196,0,0.2);border-radius:20px;padding:40px 36px;width:360px;backdrop-filter:blur(10px)}
+.login-logo{text-align:center;margin-bottom:28px}
+.login-icon{width:48px;height:48px;background:#f5c400;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;font-weight:900;color:#000}
+.login-title{font-size:26px;font-weight:800;letter-spacing:4px;color:#f5c400}
+.login-sub{font-size:11px;color:#666;letter-spacing:2px;margin-top:2px}
+.tabs{display:flex;border-radius:8px;overflow:hidden;border:1px solid rgba(245,196,0,0.2);margin-bottom:22px}
+.tab{flex:1;padding:9px 0;font-size:13px;font-weight:600;cursor:pointer;background:transparent;color:#666;border:none;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.tab.on{background:#f5c400;color:#000}
+.pane{display:none}
+.pane.on{display:block}
+.field{width:100%;padding:11px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.1);background:rgba(255,255,255,0.04);color:#fff;font-size:14px;margin-bottom:10px;font-family:'DM Sans',sans-serif;outline:none;transition:border-color 0.2s}
+.field:focus{border-color:rgba(245,196,0,0.5)}
+.field::placeholder{color:#444}
+.btn-main{width:100%;padding:13px;border-radius:8px;background:#f5c400;color:#000;font-size:14px;font-weight:800;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;margin-top:4px;transition:opacity 0.2s}
+.btn-main:hover{opacity:0.88}
+.btn-main:disabled{opacity:0.5;cursor:not-allowed}
+.err-msg{display:none;background:rgba(229,62,62,0.1);border:1px solid rgba(229,62,62,0.3);color:#fc8181;font-size:12px;padding:8px 12px;border-radius:6px;margin-bottom:10px}
+.suc-msg{display:none;background:rgba(72,187,120,0.1);border:1px solid rgba(72,187,120,0.3);color:#68d391;font-size:12px;padding:8px 12px;border-radius:6px;margin-bottom:10px}
+.forgot-link{display:block;text-align:center;margin-top:12px;font-size:12px;color:#555;cursor:pointer;transition:color 0.2s}
+.forgot-link:hover{color:#f5c400}
+.btn-cadastro{width:100%;padding:12px;border-radius:8px;background:transparent;border:1px solid rgba(245,196,0,0.4);color:#f5c400;font-size:13px;font-weight:700;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;transition:all 0.2s}
+.btn-cadastro:hover{background:rgba(245,196,0,0.08)}
+.trial-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.85);z-index:1000;align-items:center;justify-content:center;backdrop-filter:blur(4px)}
+.trial-overlay.on{display:flex}
+.trial-modal{background:#111;border:1px solid rgba(245,196,0,0.3);border-radius:20px;padding:40px 36px;max-width:360px;text-align:center}
+.trial-icon{font-size:40px;margin-bottom:16px}
+.trial-title{font-size:22px;font-weight:800;color:#f5c400;letter-spacing:2px;margin-bottom:10px}
+.trial-desc{font-size:14px;color:#888;line-height:1.7;margin-bottom:24px}
+.trial-btn{width:100%;padding:14px;border-radius:8px;background:#f5c400;color:#000;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:"DM Sans",sans-serif;letter-spacing:1px;margin-bottom:10px;transition:opacity 0.2s}
+.trial-btn:hover{opacity:0.88}
+.trial-close{font-size:12px;color:#555;cursor:pointer;margin-top:6px;display:block}
+.trial-close:hover{color:#888}
+
+/* APP PAGE */
+#page-app{display:none;flex-direction:column;min-height:100vh;background:#000}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:14px 24px;border-bottom:1px solid rgba(245,196,0,0.12);background:#000}
+.top-logo{font-size:16px;font-weight:800;letter-spacing:3px;color:#f5c400}
+.top-right{display:flex;align-items:center;gap:12px}
+.avatar{width:32px;height:32px;border-radius:50%;background:#f5c400;color:#000;font-size:12px;font-weight:800;display:flex;align-items:center;justify-content:center}
+.uname{font-size:13px;color:#888}
+.logout-btn{font-size:12px;color:#555;cursor:pointer;padding:5px 12px;border:1px solid #222;border-radius:6px;background:transparent;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.logout-btn:hover{color:#f5c400;border-color:rgba(245,196,0,0.3)}
+.app-body{display:flex;flex:1}
+.sidebar{width:220px;border-right:1px solid rgba(245,196,0,0.08);padding:20px 14px;background:#000}
+.sidebar-label{font-size:10px;letter-spacing:2px;color:#444;margin-bottom:10px}
+.hist-empty{font-size:12px;color:#444;line-height:1.6;padding:8px 0}
+.hlist{display:flex;flex-direction:column;gap:8px}
+.hitem{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:12px}
+.hmeta{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
+.hinfo{display:flex;align-items:center;gap:8px}
+.hthumb{width:32px;height:32px;border-radius:6px;object-fit:cover}
+.hdate{font-size:11px;color:#666}
+.htime{font-size:10px;color:#444}
+.hratio{font-size:10px;color:#f5c400;background:rgba(245,196,0,0.08);padding:2px 8px;border-radius:10px}
+.hprompts{display:flex;flex-direction:column;gap:6px}
+.hprompt{background:rgba(255,255,255,0.02);border-radius:6px;padding:8px}
+.hplabel{font-size:10px;font-weight:700;letter-spacing:1px;margin-bottom:4px}
+.hptext{font-size:11px;color:#666;line-height:1.5;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+.hcopy{margin-top:6px;padding:4px 10px;border-radius:4px;background:transparent;border:1px solid #333;color:#666;font-size:11px;cursor:pointer;font-family:'DM Sans',sans-serif}
+.hcopy:hover{border-color:rgba(245,196,0,0.3);color:#f5c400}
+.hcopy.ok{border-color:rgba(72,187,120,0.4);color:#68d391}
+.main-content{flex:1;padding:28px 36px;max-width:800px}
+.steps{display:flex;align-items:center;gap:0;margin-bottom:24px}
+.st{width:26px;height:26px;border-radius:50%;border:1.5px solid #333;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#444;transition:all 0.3s}
+.st.act{border-color:#f5c400;color:#f5c400}
+.st.done{border-color:#4caf50;color:#4caf50}
+.sl{width:40px;height:1px;background:#222;margin:0 6px;transition:background 0.3s}
+.sl.done{background:#4caf50}
+.step-label{font-size:12px;color:#444;margin-left:6px}
+.step-label.act{color:#f5c400}
+
+.isc{display:none}
+.isc.on{display:block}
+
+.drop-zone{border:1.5px dashed rgba(245,196,0,0.25);border-radius:14px;padding:40px;text-align:center;cursor:pointer;transition:all 0.2s;background:rgba(245,196,0,0.02)}
+.drop-zone:hover,.drop-zone.over{border-color:rgba(245,196,0,0.6);background:rgba(245,196,0,0.05)}
+.drop-icon{font-size:32px;margin-bottom:10px;opacity:0.4}
+.drop-text{font-size:13px;color:#555}
+.drop-text span{color:#f5c400;cursor:pointer}
+
+.prev-wrap{position:relative;display:inline-block}
+.prev-img{max-height:240px;border-radius:10px;display:block}
+.prev-actions{display:flex;gap:8px;margin-top:10px}
+.prev-btn{padding:6px 14px;border-radius:6px;font-size:12px;font-weight:600;cursor:pointer;font-family:'DM Sans',sans-serif;border:1px solid;transition:all 0.2s}
+.prev-btn.remove{background:rgba(229,62,62,0.1);border-color:rgba(229,62,62,0.3);color:#fc8181}
+.prev-btn.ready{background:rgba(72,187,120,0.1);border-color:rgba(72,187,120,0.3);color:#68d391;cursor:default}
+
+.ratios{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0}
+.rpill{padding:7px 16px;border-radius:20px;border:1px solid #222;font-size:12px;color:#666;cursor:pointer;transition:all 0.2s;font-family:'DM Sans',sans-serif}
+.rpill.on{border-color:#f5c400;color:#f5c400;background:rgba(245,196,0,0.08)}
+
+.gerar-btn{width:100%;padding:15px;border-radius:10px;background:#f5c400;color:#000;font-size:15px;font-weight:800;border:none;cursor:pointer;font-family:'DM Sans',sans-serif;letter-spacing:1px;transition:opacity 0.2s;margin-top:4px}
+.gerar-btn:hover{opacity:0.88}
+
+.loading-area{text-align:center;padding:40px 0}
+.loading-area p{font-size:13px;color:#666;margin-top:12px}
+.spinner{width:32px;height:32px;border:2px solid #222;border-top-color:#f5c400;border-radius:50%;animation:spin 0.8s linear infinite;margin:0 auto}
+@keyframes spin{to{transform:rotate(360deg)}}
+
+.result-sub{font-size:12px;color:#555;margin-bottom:20px}
+.result-cards{display:flex;flex-direction:column;gap:14px}
+.result-card{background:rgba(255,255,255,0.03);border:1px solid rgba(255,255,255,0.08);border-radius:12px;padding:18px}
+.result-card-label{font-size:10px;font-weight:700;letter-spacing:2px;margin-bottom:10px}
+.result-card-label.ed{color:#6a9fff}
+.result-card-label.ls{color:#ff8080}
+.result-card-text{font-size:13px;color:#bbb;line-height:1.7}
+.copy-btn{margin-top:12px;padding:7px 16px;border-radius:6px;background:transparent;border:1px solid #333;color:#666;font-size:12px;cursor:pointer;font-family:'DM Sans',sans-serif;display:inline-flex;align-items:center;gap:6px;transition:all 0.2s}
+.copy-btn:hover{border-color:rgba(245,196,0,0.4);color:#f5c400}
+.copy-btn.ok{border-color:rgba(72,187,120,0.4);color:#68d391}
+.new-btn{margin-top:20px;padding:10px 20px;border-radius:8px;background:transparent;border:1px solid #333;color:#888;font-size:13px;cursor:pointer;font-family:'DM Sans',sans-serif;transition:all 0.2s}
+.new-btn:hover{border-color:rgba(245,196,0,0.3);color:#f5c400}
+
+.nav-bottom{display:none}
+@media(max-width:600px){
+  .sidebar{display:none}
+  .main-content{padding:20px 16px}
+  .login-card{width:100%;border-radius:0;min-height:100vh;border:none}
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="page-login">
+  <div id="blob"></div>
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-icon">P</div>
+      <div class="login-title">PROMPTFY</div>
+      <div class="login-sub">GERADOR DE PROMPTS COM IA</div>
+    </div>
+    <div class="tabs">
+      <button class="tab on" id="tab-login" onclick="goTab('login')">Entrar</button>
+      <button class="tab" id="tab-forgot" onclick="goTab('forgot')">Recuperar Senha</button>
+    </div>
+    <div id="pane-login" class="pane on">
+      <div id="l-err" class="err-msg"></div>
+      <input id="l-email" class="field" type="email" placeholder="E-mail" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <input id="l-pass" class="field" type="password" placeholder="Senha" onkeydown="if(event.key==='Enter')doLogin()"/>
+      <button id="l-btn" class="btn-main" onclick="doLogin()">ENTRAR</button>
+      <span class="forgot-link" onclick="goTab('forgot')">Esqueci minha senha</span>
+      <div style="margin-top:20px;padding-top:20px;border-top:1px solid rgba(255,255,255,0.06);text-align:center">
+        <p style="font-size:12px;color:#555;margin-bottom:10px">Ainda não tem uma conta?</p>
+        <button class="btn-cadastro" onclick="goTab('register')">CADASTRAR — R$ 19,90/MÊS</button>
+      </div>
+    </div>
+    <div id="pane-register" class="pane">
+      <div id="r-err" class="err-msg"></div>
+      <div id="r-suc" class="suc-msg"></div>
+      <input id="r-name" class="field" type="text" placeholder="Nome completo"/>
+      <input id="r-email" class="field" type="email" placeholder="E-mail"/>
+      <input id="r-pass" class="field" type="password" placeholder="Senha (mín. 6 caracteres)"/>
+      <button class="btn-main" onclick="doRegister()">ASSINAR R$ 19,90/MÊS</button>
+    </div>
+    <div id="pane-forgot" class="pane">
+      <div id="f-err" class="err-msg"></div>
+      <div id="f-suc" class="suc-msg"></div>
+      <input id="f-email" class="field" type="email" placeholder="Seu e-mail"/>
+      <button class="btn-main" onclick="doForgot()">ENVIAR LINK</button>
+      <span class="forgot-link" onclick="goTab('login')">Voltar ao login</span>
+    </div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="page-app">
+  <div class="topbar">
+    <div class="top-logo">PROMPTFY</div>
+    <div class="top-right">
+      <div class="avatar" id="av">?</div>
+      <span class="uname" id="uname"></span>
+      <button class="logout-btn" onclick="doLogout()">Sair</button>
+    </div>
+  </div>
+  <div class="app-body">
+    <div class="sidebar">
+      <div class="sidebar-label">HISTÓRICO</div>
+      <div id="hcontent"><div class="hist-empty">Nenhum prompt ainda.</div></div>
+    </div>
+    <div class="main-content">
+      <div class="steps">
+        <div class="st done" id="st1">✓</div>
+        <span class="step-label">Upload</span>
+        <div class="sl" id="sl1"></div>
+        <div class="st act" id="st2">2</div>
+        <span class="step-label act">Formato</span>
+        <div class="sl" id="sl2"></div>
+        <div class="st" id="st3">3</div>
+        <span class="step-label">Prompts</span>
+      </div>
+
+      <div id="isc-upload" class="isc on">
+        <div id="dz" class="drop-zone" onclick="document.getElementById('finp').click()">
+          <div id="area-drop">
+            <div class="drop-icon">📷</div>
+            <div class="drop-text">Arraste ou <span>clique para enviar</span> sua foto</div>
+          </div>
+          <div id="area-prev" style="display:none">
+            <img id="pimg" class="prev-img" src="" alt=""/>
+            <div class="prev-actions">
+              <button class="prev-btn remove" onclick="event.stopPropagation();removeImg()">Remover</button>
+              <span class="prev-btn ready">Foto pronta</span>
+            </div>
+          </div>
+        </div>
+        <input id="finp" type="file" accept="image/*" style="display:none" onchange="onFile(this.files[0])"/>
+        <div id="area-load" style="display:none" class="loading-area">
+          <div class="spinner"></div>
+          <p>Analisando e gerando prompts...</p>
+        </div>
+        <div class="ratios">
+          <button class="rpill on" data-r="4:5" onclick="setR(this)">4:5 — Feed</button>
+          <button class="rpill" data-r="1:1" onclick="setR(this)">1:1 — Quadrado</button>
+          <button class="rpill" data-r="9:16" onclick="setR(this)">9:16 — Stories</button>
+          <button class="rpill" data-r="16:9" onclick="setR(this)">16:9 — YouTube</button>
+        </div>
+        <button class="gerar-btn" onclick="generate()">⚡ GERAR PROMPTS</button>
+      </div>
+
+      <div id="isc-result" class="isc">
+        <p class="result-sub" id="rsub"></p>
+        <div class="result-cards">
+          <div class="result-card">
+            <div class="result-card-label ed">EDITORIAL</div>
+            <div class="result-card-text" id="txt-ed"></div>
+            <button class="copy-btn" id="btn-ed" onclick="copyP('ed')">Copiar</button>
+          </div>
+          <div class="result-card">
+            <div class="result-card-label ls">LIFESTYLE</div>
+            <div class="result-card-text" id="txt-ls"></div>
+            <button class="copy-btn" id="btn-ls" onclick="copyP('ls')">Copiar</button>
+          </div>
+        </div>
+        <button class="new-btn" onclick="resetGerar()">+ Gerar novo prompt</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUPABASE_URL = "https://ecwuogrvtaxgpinwmnbe.supabase.co";
+const SUPABASE_KEY = "sb_publishable_fXWn9Qcv34aGsDN1IYTfag_zR6Fkg1z";
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+let ratio="4:5",imgB64="",imgType="",imgSrc="";
+let prompts={ed:"",ls:""};
+let hist=[];
+try{hist=JSON.parse(localStorage.getItem("pf_hist")||"[]");}catch(e){}
+
+// Bolhas flutuantes
+(function(){
+  const login = document.getElementById("page-login");
+  const bubbles = [
+    {w:500,h:500,top:"50%",left:"50%",mt:"-250px",ml:"-250px",op:0.12,dur:8,delay:0},
+    {w:200,h:200,top:"10%",left:"8%",mt:"0",ml:"0",op:0.07,dur:10,delay:1},
+    {w:120,h:120,top:"70%",left:"80%",mt:"0",ml:"0",op:0.06,dur:12,delay:3},
+    {w:80,h:80,top:"20%",left:"75%",mt:"0",ml:"0",op:0.05,dur:9,delay:2},
+    {w:150,h:150,top:"80%",left:"15%",mt:"0",ml:"0",op:0.06,dur:11,delay:4},
+    {w:60,h:60,top:"45%",left:"90%",mt:"0",ml:"0",op:0.04,dur:7,delay:1.5},
+  ];
+  bubbles.forEach(b => {
+    const el = document.createElement("div");
+    el.style.cssText = "position:fixed;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle at 40% 40%,#f5c400,#c89a00 50%,transparent 80%);width:"+b.w+"px;height:"+b.h+"px;top:"+b.top+";left:"+b.left+";margin-top:"+b.mt+";margin-left:"+b.ml+";opacity:"+b.op+";filter:blur("+(b.w>100?10:4)+"px);animation:floatBubble "+b.dur+"s ease-in-out "+b.delay+"s infinite;";
+    login.appendChild(el);
+  });
+})();
+
+async function checkAcesso(email) {
+  const { data, error } = await sb.from("usuarios").select("ativo,data_expiracao").eq("email", email).single();
+  if(error || !data) return { ok: false, msg: "Acesso não encontrado. Verifique se o pagamento foi confirmado." };
+  if(data.data_expiracao) {
+    const expiracao = new Date(data.data_expiracao);
+    if(new Date() > expiracao && data.ativo) {
+      await sb.from("usuarios").update({ ativo: false }).eq("email", email);
+      return { ok: false, msg: "Seu acesso expirou. Renove sua assinatura para continuar." };
+    }
+  }
+  if(!data.ativo) return { ok: false, msg: "Seu acesso está inativo. Entre em contato ou renove sua assinatura." };
+  return { ok: true };
+}
+
+(async function checkSession(){
+  const { data: { session } } = await sb.auth.getSession();
+  if(session){
+    const email = session.user.email;
+    const acesso = await checkAcesso(email);
+    if(!acesso.ok){ await sb.auth.signOut(); return; }
+    const name = session.user.user_metadata.full_name || email;
+    document.getElementById("av").textContent = name.slice(0,2).toUpperCase();
+    document.getElementById("uname").textContent = name;
+    document.getElementById("page-login").style.display = "none";
+    document.getElementById("page-app").style.display = "flex";
+    renderHist();
+  }
+})();
+
+function goTab(t){
+  ["tab-login","tab-forgot"].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle("on",id==="tab-"+t);});
+  ["pane-login","pane-register","pane-forgot"].forEach(id=>{const el=document.getElementById(id);if(el)el.classList.toggle("on",id==="pane-"+t);});
+  ["l-err","r-err","r-suc","f-err","f-suc"].forEach(id=>{const el=document.getElementById(id);if(el)el.style.display="none";});
+}
+
+async function doLogin(){
+  const email=document.getElementById("l-email").value.trim().toLowerCase();
+  const pass=document.getElementById("l-pass").value;
+  const err=document.getElementById("l-err");
+  const btn=document.getElementById("l-btn");
+  err.style.display="none";
+  if(!email||!pass){err.textContent="Preencha e-mail e senha.";err.style.display="block";return;}
+  if(email==="admin@promptfy.com"&&pass==="Promptfy@2025"){document.getElementById("av").textContent="AD";document.getElementById("uname").textContent="Admin";document.getElementById("page-login").style.display="none";document.getElementById("page-app").style.display="flex";renderHist();return;}
+  btn.disabled=true;btn.textContent="Entrando...";
+  const {data,error} = await sb.auth.signInWithPassword({email,password:pass});
+  if(error){btn.disabled=false;btn.textContent="ENTRAR";err.textContent="E-mail ou senha incorretos.";err.style.display="block";return;}
+  const acesso = await checkAcesso(email);
+  if(!acesso.ok){
+    await sb.auth.signOut();
+    btn.disabled=false;btn.textContent="ENTRAR";
+    err.textContent=acesso.msg;err.style.display="block";return;
+  }
+  btn.disabled=false;btn.textContent="ENTRAR";
+  const name = data.user.user_metadata.full_name || email;
+  document.getElementById("av").textContent=name.slice(0,2).toUpperCase();
+  document.getElementById("uname").textContent=name;
+  document.getElementById("page-login").style.display="none";
+  document.getElementById("page-app").style.display="flex";
+  renderHist();
+}
+
+async function doRegister(){
+  const name=document.getElementById("r-name").value.trim();
+  const email=document.getElementById("r-email").value.trim().toLowerCase();
+  const pass=document.getElementById("r-pass").value;
+  const err=document.getElementById("r-err");
+  const suc=document.getElementById("r-suc");
+  err.style.display="none";suc.style.display="none";
+  if(!name||!email||pass.length<6){err.textContent="Preencha todos os campos (senha mín. 6 caracteres).";err.style.display="block";return;}
+  const btn=document.querySelector("#pane-register .btn-main");
+  btn.disabled=true;btn.textContent="Cadastrando...";
+  const {error} = await sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:window.location.origin}});
+  btn.disabled=false;btn.textContent="ASSINAR R$ 19,90/MÊS";
+  if(error){err.textContent=error.message;err.style.display="block";return;}
+  suc.textContent="✅ Cadastro realizado! Redirecionando para o pagamento...";
+  suc.style.display="block";
+  setTimeout(()=>{ window.open("https://pag.ae/81JL3KGg7","_blank"); },1500);
+}
+
+async function doForgot(){
+  const email=document.getElementById("f-email").value.trim().toLowerCase();
+  const err=document.getElementById("f-err");
+  const suc=document.getElementById("f-suc");
+  err.style.display="none";suc.style.display="none";
+  if(!email){err.textContent="Digite seu e-mail.";err.style.display="block";return;}
+  const {error} = await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
+  if(error){err.textContent="Erro ao enviar. Verifique o e-mail.";err.style.display="block";return;}
+  suc.textContent="✅ Link enviado para "+email+"! Verifique sua caixa de entrada.";
+  suc.style.display="block";
+}
+
+async function doLogout(){
+  await sb.auth.signOut();
+  imgB64="";imgType="";imgSrc="";prompts={ed:"",ls:""};
+  document.getElementById("l-email").value="";
+  document.getElementById("l-pass").value="";
+  resetGerar();
+  document.getElementById("page-app").style.display="none";
+  document.getElementById("page-login").style.display="flex";
+}
+
+function setR(el){
+  document.querySelectorAll(".rpill").forEach(p=>p.classList.remove("on"));
+  el.classList.add("on");ratio=el.dataset.r;
+}
+
+function onFile(file){
+  if(!file)return;
+  const reader=new FileReader();
+  reader.onload=e=>{
+    const res=e.target.result;
+    imgB64=res.split(",")[1];imgType=file.type;imgSrc=res;
+    document.getElementById("pimg").src=res;
+    document.getElementById("area-drop").style.display="none";
+    document.getElementById("area-prev").style.display="block";
+    document.getElementById("sl1").classList.add("done");
+    document.getElementById("st2").classList.add("act");
+  };
+  reader.readAsDataURL(file);
+}
+
+const dz=document.getElementById("dz");
+dz.addEventListener("dragover",e=>{e.preventDefault();dz.classList.add("over");});
+dz.addEventListener("dragleave",()=>dz.classList.remove("over"));
+dz.addEventListener("drop",e=>{e.preventDefault();dz.classList.remove("over");onFile(e.dataTransfer.files[0]);});
+
+function removeImg(){
+  imgB64="";imgType="";imgSrc="";
+  document.getElementById("finp").value="";
+  document.getElementById("area-prev").style.display="none";
+  document.getElementById("area-drop").style.display="block";
+}
+
+function resetGerar(){
+  removeImg();
+  document.getElementById("area-load").style.display="none";
+  document.getElementById("area-drop").style.display="block";
+  document.getElementById("isc-upload").classList.add("on");
+  document.getElementById("isc-result").classList.remove("on");
+  document.getElementById("st1").className="st done";document.getElementById("st1").textContent="✓";
+  document.getElementById("st2").className="st act";document.getElementById("st2").textContent="2";
+  document.getElementById("st3").className="st";document.getElementById("st3").textContent="3";
+  document.getElementById("sl1").className="sl";
+  document.getElementById("sl2").className="sl";
+}
+
+const BASE="ABSOLUTE RULES — NEVER INCLUDE IN THE PROMPT:\nHair color/type/style, eye color, skin tone, face shape, glasses, beard/mustache, earrings, facial piercings, ethnicity, apparent age, gender.\nNEVER use \"a man\",\"a woman\",\"a person with...\".\nThe Nano Banana AI automatically copies the person's face and body.\nOUTPUT: only the final prompt in English, single fluid paragraph. ZERO introduction, ZERO explanation.";
+
+const SYS={
+  ed:"You are an expert in AI image generation prompt engineering. Generate an EDITORIAL style prompt: premium fashion magazine, dramatic studio lighting, neutral/minimalist background, rigorous composition, Vogue/Bazaar aesthetic.\nStructure: pose → detailed outfit → setting/lighting → visual style → end with --ar RATIO\n"+BASE,
+  ls:"You are an expert in AI image generation prompt engineering. Generate a LIFESTYLE style prompt: natural photography, real ambient light, authentic settings (street, café, park, urban), relaxed human vibe.\nStructure: pose → outfit → lifestyle setting → natural light → visual style → end with --ar RATIO\n"+BASE
+};
+
+async function callGemini(style){
+  const system=SYS[style].replace(/RATIO/g,ratio);
+  const resp=await fetch("/api/gemini",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system,imageBase64:imgB64,imageType:imgType,ratio})});
+  const data=await resp.json();
+  if(data.error)throw new Error(data.error);
+  return data.text.trim();
+}
+
+async function generate(){
+  if(!imgB64)return;
+
+  // Trial - verifica se já usou 2 prompts gratuitos
+  const logado = (await sb.auth.getSession()).data.session;
+  if(!logado){
+    let usados = parseInt(localStorage.getItem("pf_trial")||"0");
+    if(usados >= 2){
+      showTrialModal();
+      return;
+    }
+  }
+  document.getElementById("area-prev").style.display="none";
+  document.getElementById("area-load").style.display="block";
+  document.getElementById("sl1").classList.add("done");
+  document.getElementById("st2").className="st done";document.getElementById("st2").textContent="✓";
+  document.getElementById("sl2").classList.add("done");
+  document.getElementById("st3").classList.add("act");
+  try{
+    const[ed,ls]=await Promise.all([callGemini("ed"),callGemini("ls")]);
+    prompts={ed,ls};
+    document.getElementById("txt-ed").textContent=ed;
+    document.getElementById("txt-ls").textContent=ls;
+    document.getElementById("rsub").textContent="Aspect ratio "+ratio+" · Escolha o estilo e cole no Nano Banana";
+    saveHist({ed,ls,ratio,imgSrc,date:new Date().toLocaleDateString("pt-BR"),time:new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})});
+    // Incrementa contador trial se não estiver logado
+    const sessaoAtual = (await sb.auth.getSession()).data.session;
+    if(!sessaoAtual){
+      let usados = parseInt(localStorage.getItem("pf_trial")||"0");
+      localStorage.setItem("pf_trial", usados + 1);
+    }
+    document.getElementById("area-load").style.display="none";
+    document.getElementById("isc-upload").classList.remove("on");
+    document.getElementById("isc-result").classList.add("on");
+    document.getElementById("st3").textContent="3";
+  }catch(e){
+    document.getElementById("area-load").style.display="none";
+    document.getElementById("area-prev").style.display="block";
+    alert("Erro ao gerar os prompts.\n\n"+e.message);
+  }
+}
+
+function copyP(type){
+  const txt=prompts[type];if(!txt)return;
+  navigator.clipboard.writeText(txt).then(()=>{
+    const btn=document.getElementById("btn-"+type);
+    btn.classList.add("ok");btn.textContent="Copiado!";
+    setTimeout(()=>{btn.classList.remove("ok");btn.textContent="Copiar";},2500);
+  });
+}
+
+function saveHist(item){
+  hist.unshift(item);
+  if(hist.length>20)hist=hist.slice(0,20);
+  try{localStorage.setItem("pf_hist",JSON.stringify(hist));}catch(e){}
+}
+
+function renderHist(){
+  const el=document.getElementById("hcontent");
+  if(!hist.length){el.innerHTML="<div class='hist-empty'>Nenhum prompt gerado ainda.</div>";return;}
+  const L={ed:{name:"EDITORIAL",color:"#6a9fff"},ls:{name:"LIFESTYLE",color:"#ff8080"}};
+  el.innerHTML="<div class='hlist'>"+hist.map(item=>"<div class='hitem'><div class='hmeta'><div class='hinfo'>"+(item.imgSrc?"<img class='hthumb' src='"+item.imgSrc+"' alt=''>":"")+"<div><div class='hdate'>"+item.date+"</div><div class='htime'>"+(item.time||"")+"</div></div></div><div class='hratio'>--ar "+item.ratio+"</div></div><div class='hprompts'>"+["ed","ls"].map(t=>"<div class='hprompt'><div class='hplabel' style='color:"+L[t].color+"'>"+L[t].name+"</div><div class='hptext'>"+(item[t]||"—")+"</div><button class='hcopy' onclick='copyHist(this,\""+btoa(unescape(encodeURIComponent(item[t]||"")))+"\")''>Copiar</button></div>").join("")+"</div></div>").join("")+"</div>";
+}
+
+function copyHist(btn,b64){
+  const txt=decodeURIComponent(escape(atob(b64)));
+  navigator.clipboard.writeText(txt).then(()=>{btn.classList.add("ok");btn.textContent="Copiado!";setTimeout(()=>{btn.classList.remove("ok");btn.textContent="Copiar";},2000);});
+}
+</script>
+<!-- Trial Modal -->
+<div class="trial-overlay" id="trial-overlay">
+  <div class="trial-modal">
+    <div class="trial-icon">⚡</div>
+    <div class="trial-title">LIMITE GRATUITO</div>
+    <div class="trial-desc">Você usou seus <strong style="color:#f5c400">2 prompts gratuitos</strong>.<br>Assine agora e gere prompts ilimitados por apenas <strong style="color:#f5c400">R$ 19,90/mês</strong>.</div>
+    <button class="trial-btn" onclick="goTrialCadastro()">ASSINAR AGORA — R$ 19,90/MÊS</button>
+    <span class="trial-close" onclick="closeTrialModal()">Agora não</span>
+  </div>
+</div>
+</body>
+</html>
