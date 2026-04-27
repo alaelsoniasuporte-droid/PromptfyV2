@@ -12,7 +12,7 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
 
 /* LOGIN PAGE */
 #page-login{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;overflow:hidden;background:#000}
-#blob{position:fixed;width:600px;height:600px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#f5c400 0%,#c89a00 40%,#7a5e00 70%,transparent 100%);opacity:0.15;pointer-events:none;transition:transform 0.15s ease;filter:blur(8px);z-index:0}
+#blob{display:none}.bubble{position:fixed;border-radius:50%;pointer-events:none;z-index:0;animation:floatBubble linear infinite}.bubble-main{position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#f5c400 0%,#c89a00 40%,#7a5e00 70%,transparent 100%);opacity:0.12;pointer-events:none;z-index:0;filter:blur(12px);top:50%;left:50%;transform:translate(-50%,-50%)}@keyframes floatBubble{0%{transform:translateY(0) scale(1);opacity:0.08}50%{transform:translateY(-40px) scale(1.05);opacity:0.15}100%{transform:translateY(0) scale(1);opacity:0.08}}
 .login-card{position:relative;z-index:2;background:rgba(10,10,10,0.9);border:1px solid rgba(245,196,0,0.2);border-radius:20px;padding:40px 36px;width:360px;backdrop-filter:blur(10px)}
 .login-logo{text-align:center;margin-bottom:28px}
 .login-icon{width:48px;height:48px;background:#f5c400;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;font-weight:900;color:#000}
@@ -247,11 +247,23 @@ let prompts={ed:"",ls:""};
 let hist=[];
 try{hist=JSON.parse(localStorage.getItem("pf_hist")||"[]");}catch(e){}
 
-// Blob segue o mouse
-const blob = document.getElementById("blob");
-document.getElementById("page-login").addEventListener("mousemove", e => {
-  blob.style.transform = "translate(" + (e.clientX - 300) + "px," + (e.clientY - 300) + "px)";
-});
+// Bolhas flutuantes
+(function(){
+  const login = document.getElementById("page-login");
+  const bubbles = [
+    {w:500,h:500,top:"50%",left:"50%",mt:"-250px",ml:"-250px",op:0.12,dur:8,delay:0},
+    {w:200,h:200,top:"10%",left:"8%",mt:"0",ml:"0",op:0.07,dur:10,delay:1},
+    {w:120,h:120,top:"70%",left:"80%",mt:"0",ml:"0",op:0.06,dur:12,delay:3},
+    {w:80,h:80,top:"20%",left:"75%",mt:"0",ml:"0",op:0.05,dur:9,delay:2},
+    {w:150,h:150,top:"80%",left:"15%",mt:"0",ml:"0",op:0.06,dur:11,delay:4},
+    {w:60,h:60,top:"45%",left:"90%",mt:"0",ml:"0",op:0.04,dur:7,delay:1.5},
+  ];
+  bubbles.forEach(b => {
+    const el = document.createElement("div");
+    el.style.cssText = "position:fixed;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle at 40% 40%,#f5c400,#c89a00 50%,transparent 80%);width:"+b.w+"px;height:"+b.h+"px;top:"+b.top+";left:"+b.left+";margin-top:"+b.mt+";margin-left:"+b.ml+";opacity:"+b.op+";filter:blur("+(b.w>100?10:4)+"px);animation:floatBubble "+b.dur+"s ease-in-out "+b.delay+"s infinite;";
+    login.appendChild(el);
+  });
+})();
 
 async function checkAcesso(email) {
   const { data, error } = await sb.from("usuarios").select("ativo,data_expiracao").eq("email", email).single();
