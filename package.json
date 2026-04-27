@@ -1,14 +1,15 @@
 {
   "name": "promptfy",
   "version": "1.0.0",
+  "description": "Promptfy - Gerador de Prompts com IA",
   "main": "server.js",
   "scripts": {
     "start": "node server.js"
   },
   "dependencies": {
-    "express": "^4.18.2"
-  },
-  "engines": {
-    "node": "20.x"
+    "express": "^4.18.2",
+    "node-fetch": "^2.7.0",
+    "cors": "^2.8.5",
+    "@supabase/supabase-js": "^2.39.0"
   }
 }
