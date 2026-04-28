@@ -4,17 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Promptfy</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2">function showTrialModal(){
-  document.getElementById("trial-overlay").classList.add("on");
-}
-function closeTrialModal(){
-  document.getElementById("trial-overlay").classList.remove("on");
-}
-function goTrialCadastro(){
-  closeTrialModal();
-  goTab("register");
-}
-</script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -22,7 +12,18 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
 
 /* LOGIN PAGE */
 #page-login{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;overflow:hidden;background:#000}
-#blob{display:none}.bubble{position:fixed;border-radius:50%;pointer-events:none;z-index:0;animation:floatBubble linear infinite}.bubble-main{position:fixed;width:500px;height:500px;border-radius:50%;background:radial-gradient(circle at 40% 40%,#f5c400 0%,#c89a00 40%,#7a5e00 70%,transparent 100%);opacity:0.12;pointer-events:none;z-index:0;filter:blur(12px);top:50%;left:50%;transform:translate(-50%,-50%)}@keyframes floatBubble{0%{transform:translateY(0) scale(1);opacity:0.08}50%{transform:translateY(-40px) scale(1.05);opacity:0.15}100%{transform:translateY(0) scale(1);opacity:0.08}}
+#blob{display:none}
+
+/* BANANAS FLUTUANTES */
+.banana{position:fixed;pointer-events:none;z-index:0;animation:floatBanana linear infinite;opacity:0}
+@keyframes floatBanana{
+  0%  {transform:translateY(0) rotate(0deg) scale(1);opacity:0}
+  10% {opacity:0.55}
+  50% {transform:translateY(-220px) rotate(180deg) scale(1.08);opacity:0.35}
+  90% {opacity:0.18}
+  100%{transform:translateY(-460px) rotate(360deg) scale(0.85);opacity:0}
+}
+
 .login-card{position:relative;z-index:2;background:rgba(10,10,10,0.9);border:1px solid rgba(245,196,0,0.2);border-radius:20px;padding:40px 36px;width:360px;backdrop-filter:blur(10px)}
 .login-logo{text-align:center;margin-bottom:28px}
 .login-icon{width:48px;height:48px;background:#f5c400;border-radius:12px;display:flex;align-items:center;justify-content:center;margin:0 auto 10px;font-size:24px;font-weight:900;color:#000}
@@ -152,7 +153,7 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
   <div id="blob"></div>
   <div class="login-card">
     <div class="login-logo">
-      <div class="login-icon">P</div>
+      <div class="login-icon">🍌</div>
       <div class="login-title">PROMPTFY</div>
       <div class="login-sub">GERADOR DE PROMPTS COM IA</div>
     </div>
@@ -245,8 +246,31 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
   </div>
 </div>
 
+<!-- Trial Modal -->
+<div class="trial-overlay" id="trial-overlay">
+  <div class="trial-modal">
+    <div class="trial-icon">⚡</div>
+    <div class="trial-title">LIMITE GRATUITO</div>
+    <div class="trial-desc">Você usou seus <strong style="color:#f5c400">4 prompts gratuitos</strong>.<br>Assine agora e gere prompts ilimitados por apenas <strong style="color:#f5c400">R$ 19,90/mês</strong>.</div>
+    <button class="trial-btn" onclick="goTrialCadastro()">ASSINAR AGORA — R$ 19,90/MÊS</button>
+    <span class="trial-close" onclick="closeTrialModal()">Agora não</span>
+  </div>
+</div>
+
 <script>
-// Firebase refs (loaded via module)
+// ─── Modal Trial ───────────────────────────────────────────────
+function showTrialModal(){
+  document.getElementById("trial-overlay").classList.add("on");
+}
+function closeTrialModal(){
+  document.getElementById("trial-overlay").classList.remove("on");
+}
+function goTrialCadastro(){
+  closeTrialModal();
+  goTab("register");
+}
+
+// ─── Firebase ─────────────────────────────────────────────────
 const waitFirebase = () => new Promise(res => {
   const check = () => window.fbAuth ? res() : setTimeout(check, 50);
   check();
@@ -257,7 +281,6 @@ let prompts={ed:"",ls:""};
 let hist=[];
 try{hist=JSON.parse(localStorage.getItem("pf_hist")||"[]");}catch(e){}
 
-// Auth Firebase
 async function doGoogleLogin(){
   await waitFirebase();
   try {
@@ -292,68 +315,41 @@ async function handleUser(user){
   renderHist();
 }
 
+function doLogout(){
+  if(window.fbAuth && window.fbAuth.signOut) window.fbAuth.signOut();
+  document.getElementById("page-app").style.display = "none";
+  document.getElementById("page-login").style.display = "flex";
+}
 
-// Verifica sessão ao carregar
-
-// Bolhas flutuantes
+// ─── BANANAS FLUTUANTES (substitui bolhas) ────────────────────
 (function(){
   const login = document.getElementById("page-login");
-  const bubbles = [
-    {w:500,h:500,top:"50%",left:"50%",mt:"-250px",ml:"-250px",op:0.12,dur:8,delay:0},
-    {w:200,h:200,top:"10%",left:"8%",mt:"0",ml:"0",op:0.07,dur:10,delay:1},
-    {w:120,h:120,top:"70%",left:"80%",mt:"0",ml:"0",op:0.06,dur:12,delay:3},
-    {w:80,h:80,top:"20%",left:"75%",mt:"0",ml:"0",op:0.05,dur:9,delay:2},
-    {w:150,h:150,top:"80%",left:"15%",mt:"0",ml:"0",op:0.06,dur:11,delay:4},
-    {w:60,h:60,top:"45%",left:"90%",mt:"0",ml:"0",op:0.04,dur:7,delay:1.5},
+  const configs = [
+    {left:"8%",  size:22, dur:9,  delay:0  },
+    {left:"18%", size:30, dur:12, delay:2.5},
+    {left:"30%", size:18, dur:8,  delay:1  },
+    {left:"45%", size:34, dur:14, delay:4  },
+    {left:"58%", size:20, dur:10, delay:0.5},
+    {left:"70%", size:28, dur:11, delay:3  },
+    {left:"82%", size:16, dur:7,  delay:1.8},
+    {left:"90%", size:26, dur:13, delay:5  },
+    {left:"24%", size:14, dur:9,  delay:6  },
+    {left:"62%", size:32, dur:15, delay:2  },
   ];
-  bubbles.forEach(b => {
+  configs.forEach(c => {
     const el = document.createElement("div");
-    el.style.cssText = "position:fixed;border-radius:50%;pointer-events:none;z-index:0;background:radial-gradient(circle at 40% 40%,#f5c400,#c89a00 50%,transparent 80%);width:"+b.w+"px;height:"+b.h+"px;top:"+b.top+";left:"+b.left+";margin-top:"+b.mt+";margin-left:"+b.ml+";opacity:"+b.op+";filter:blur("+(b.w>100?10:4)+"px);animation:floatBubble "+b.dur+"s ease-in-out "+b.delay+"s infinite;";
+    el.className = "banana";
+    el.textContent = "🍌";
+    el.style.cssText = "left:"+c.left+";bottom:-40px;font-size:"+c.size+"px;animation-duration:"+c.dur+"s;animation-delay:"+c.delay+"s;";
     login.appendChild(el);
   });
 })();
 
-  }
-  if(!data.ativo) return { ok: false, msg: "Seu acesso está inativo. Entre em contato ou renove sua assinatura." };
-  return { ok: true };
-}
-
-
-
-  if(email==="admin@promptfy.com"&&pass==="Promptfy@2025"){document.getElementById("av").textContent="AD";document.getElementById("uname").textContent="Admin";document.getElementById("page-login").style.display="none";document.getElementById("page-app").style.display="flex";renderHist();return;}
-  btn.disabled=true;btn.textContent="Entrando...";
-  const {data,error} = await sb.auth.signInWithPassword({email,password:pass});
-  if(error){btn.disabled=false;btn.textContent="ENTRAR";err.textContent="E-mail ou senha incorretos.";err.style.display="block";return;}
-
-  btn.disabled=false;btn.textContent="ENTRAR";
-  const name = data.user.user_metadata.full_name || email;
-  document.getElementById("av").textContent=name.slice(0,2).toUpperCase();
-  document.getElementById("uname").textContent=name;
-  document.getElementById("page-login").style.display="none";
-  document.getElementById("page-app").style.display="flex";
-  renderHist();
-}
-
-  const btn=document.querySelector("#pane-register .btn-main");
-  btn.disabled=true;btn.textContent="Cadastrando...";
-  const {error} = await sb.auth.signUp({email,password:pass,options:{data:{full_name:name},emailRedirectTo:window.location.origin}});
-  btn.disabled=false;btn.textContent="ASSINAR R$ 19,90/MÊS";
-  if(error){err.textContent=error.message;err.style.display="block";return;}
-  suc.textContent="✅ Cadastro realizado! Redirecionando para o pagamento...";
-  suc.style.display="block";
-  setTimeout(()=>{ window.open("https://pag.ae/81JL3KGg7","_blank"); },1500);
-}
-
-  const {error} = await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin});
-  if(error){err.textContent="Erro ao enviar. Verifique o e-mail.";err.style.display="block";return;}
-  suc.textContent="✅ Link enviado para "+email+"! Verifique sua caixa de entrada.";
-  suc.style.display="block";
-}
-
-
+// ─── Upload / Drag-and-drop ───────────────────────────────────
 function setR(el){
   document.querySelectorAll(".rpill").forEach(p=>p.classList.remove("on"));
-  el.classList.add("on");ratio=el.dataset.r;
+  el.classList.add("on");
+  ratio=el.dataset.r;
 }
 
 function onFile(file){
@@ -383,6 +379,7 @@ function removeImg(){
   document.getElementById("area-drop").style.display="block";
 }
 
+// ─── Reset (BUG 2 corrigido: steps resetam corretamente) ──────
 function resetGerar(){
   removeImg();
   document.getElementById("area-load").style.display="none";
@@ -396,6 +393,7 @@ function resetGerar(){
   document.getElementById("sl2").className="sl";
 }
 
+// ─── Geração de prompts ───────────────────────────────────────
 const BASE="ABSOLUTE RULES — NEVER INCLUDE IN THE PROMPT:\nHair color/type/style, eye color, skin tone, face shape, glasses, beard/mustache, earrings, facial piercings, ethnicity, apparent age, gender.\nNEVER use \"a man\",\"a woman\",\"a person with...\".\nThe Nano Banana AI automatically copies the person's face and body.\nOUTPUT: only the final prompt in English, single fluid paragraph. ZERO introduction, ZERO explanation.";
 
 const SYS={
@@ -417,21 +415,37 @@ async function generate(){
   // Admin bypass
   const currentUser = window.fbAuth && window.fbAuth.currentUser;
   if(currentUser && currentUser.email === "alaelsoniasuporte@gmail.com"){
-    // Admin - sem limite
+    // Admin — sem limite
   } else {
-    // Trial - verifica se já usou 4 prompts gratuitos
-    let usados = parseInt(localStorage.getItem("pf_trial")||"0");
+    // BUG 1 corrigido: contador salvo no Firestore quando possível,
+    // com fallback para localStorage caso o Firestore ainda não esteja pronto
+    let usados = 0;
+    try {
+      if(currentUser && window.fbDoc && window.fbGetDoc){
+        const ref = window.fbDoc(window.fbDb, "usuarios", currentUser.uid);
+        const snap = await window.fbGetDoc(ref);
+        usados = snap.exists() ? (snap.data().promptsUsados || 0) : 0;
+      } else {
+        usados = parseInt(localStorage.getItem("pf_trial")||"0");
+      }
+    } catch(e){
+      usados = parseInt(localStorage.getItem("pf_trial")||"0");
+    }
     if(usados >= 4){
       showTrialModal();
       return;
     }
   }
+
+  // BUG 3 corrigido: bloqueia clique na drop-zone durante o loading
+  document.getElementById("dz").style.pointerEvents="none";
   document.getElementById("area-prev").style.display="none";
   document.getElementById("area-load").style.display="block";
   document.getElementById("sl1").classList.add("done");
   document.getElementById("st2").className="st done";document.getElementById("st2").textContent="✓";
   document.getElementById("sl2").classList.add("done");
   document.getElementById("st3").classList.add("act");
+
   try{
     const[ed,ls]=await Promise.all([callGemini("ed"),callGemini("ls")]);
     prompts={ed,ls};
@@ -439,17 +453,31 @@ async function generate(){
     document.getElementById("txt-ls").textContent=ls;
     document.getElementById("rsub").textContent="Aspect ratio "+ratio+" · Escolha o estilo e cole no Nano Banana";
     saveHist({ed,ls,ratio,imgSrc,date:new Date().toLocaleDateString("pt-BR"),time:new Date().toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"})});
-    // Incrementa contador de prompts usados
+
+    // BUG 1 corrigido: incrementa no Firestore se possível
+    try {
+      if(currentUser && window.fbDoc && window.fbUpdateDoc){
+        const ref = window.fbDoc(window.fbDb, "usuarios", currentUser.uid);
+        const snap = await window.fbGetDoc(ref);
+        const atual = snap.exists() ? (snap.data().promptsUsados || 0) : 0;
+        await window.fbUpdateDoc(ref, { promptsUsados: atual + 1 });
+      }
+    } catch(e){}
+    // Fallback localStorage
     let usadosAtual = parseInt(localStorage.getItem("pf_trial")||"0");
     localStorage.setItem("pf_trial", usadosAtual + 1);
+
     document.getElementById("area-load").style.display="none";
     document.getElementById("isc-upload").classList.remove("on");
     document.getElementById("isc-result").classList.add("on");
     document.getElementById("st3").textContent="3";
-  }catch(e){
+  } catch(e){
     document.getElementById("area-load").style.display="none";
     document.getElementById("area-prev").style.display="block";
     alert("Erro ao gerar os prompts.\n\n"+e.message);
+  } finally {
+    // BUG 3 corrigido: reabilita drop-zone sempre ao final
+    document.getElementById("dz").style.pointerEvents="auto";
   }
 }
 
@@ -475,20 +503,16 @@ function renderHist(){
   el.innerHTML="<div class='hlist'>"+hist.map(item=>"<div class='hitem'><div class='hmeta'><div class='hinfo'>"+(item.imgSrc?"<img class='hthumb' src='"+item.imgSrc+"' alt=''>":"")+"<div><div class='hdate'>"+item.date+"</div><div class='htime'>"+(item.time||"")+"</div></div></div><div class='hratio'>--ar "+item.ratio+"</div></div><div class='hprompts'>"+["ed","ls"].map(t=>"<div class='hprompt'><div class='hplabel' style='color:"+L[t].color+"'>"+L[t].name+"</div><div class='hptext'>"+(item[t]||"—")+"</div><button class='hcopy' onclick='copyHist(this,\""+btoa(unescape(encodeURIComponent(item[t]||"")))+"\")''>Copiar</button></div>").join("")+"</div></div>").join("")+"</div>";
 }
 
+// BUG 4 corrigido: substituído escape()/unescape() depreciados
 function copyHist(btn,b64){
-  const txt=decodeURIComponent(escape(atob(b64)));
-  navigator.clipboard.writeText(txt).then(()=>{btn.classList.add("ok");btn.textContent="Copiado!";setTimeout(()=>{btn.classList.remove("ok");btn.textContent="Copiar";},2000);});
+  const txt=decodeURIComponent(
+    atob(b64).split('').map(c=>'%'+c.charCodeAt(0).toString(16).padStart(2,'0')).join('')
+  );
+  navigator.clipboard.writeText(txt).then(()=>{
+    btn.classList.add("ok");btn.textContent="Copiado!";
+    setTimeout(()=>{btn.classList.remove("ok");btn.textContent="Copiar";},2000);
+  });
 }
 </script>
-<!-- Trial Modal -->
-<div class="trial-overlay" id="trial-overlay">
-  <div class="trial-modal">
-    <div class="trial-icon">⚡</div>
-    <div class="trial-title">LIMITE GRATUITO</div>
-    <div class="trial-desc">Você usou seus <strong style="color:#f5c400">4 prompts gratuitos</strong>.<br>Assine agora e gere prompts ilimitados por apenas <strong style="color:#f5c400">R$ 19,90/mês</strong>.</div>
-    <button class="trial-btn" onclick="goTrialCadastro()">ASSINAR AGORA — R$ 19,90/MÊS</button>
-    <span class="trial-close" onclick="closeTrialModal()">Agora não</span>
-  </div>
-</div>
 </body>
 </html>
