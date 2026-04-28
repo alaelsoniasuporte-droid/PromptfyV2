@@ -10,6 +10,13 @@
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
 body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100vh;overflow-x:hidden}
 
+/* LOADING OVERLAY */
+#loading-overlay{position:fixed;inset:0;background:#000;z-index:9999;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;transition:opacity 0.4s}
+#loading-overlay.hide{opacity:0;pointer-events:none}
+.loading-banana{font-size:40px;animation:bananaSpin 1s linear infinite}
+@keyframes bananaSpin{0%{transform:rotate(0deg)}100%{transform:rotate(360deg)}}
+.loading-text{font-size:13px;color:#555;letter-spacing:2px}
+
 /* LOGIN PAGE */
 #page-login{display:flex;align-items:center;justify-content:center;min-height:100vh;position:relative;overflow:hidden;background:#000}
 #blob{display:none}
@@ -148,6 +155,12 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
 </head>
 <body>
 
+<!-- LOADING OVERLAY -->
+<div id="loading-overlay">
+  <div class="loading-banana">🍌</div>
+  <div class="loading-text">CARREGANDO...</div>
+</div>
+
 <!-- LOGIN -->
 <div id="page-login">
   <div id="blob"></div>
@@ -258,6 +271,15 @@ body{font-family:'DM Sans',sans-serif;background:#000;color:#fff;min-height:100v
 </div>
 
 <script>
+// Fallback: esconde overlay após 5s caso Firebase demore ou usuário não esteja logado
+setTimeout(() => {
+  const overlay = document.getElementById("loading-overlay");
+  if(overlay && !overlay.classList.contains("hide")){
+    overlay.classList.add("hide");
+    setTimeout(() => { if(overlay) overlay.style.display = "none"; }, 450);
+  }
+}, 3000);
+
 // ─── Modal Trial ───────────────────────────────────────────────
 function showTrialModal(){
   document.getElementById("trial-overlay").classList.add("on");
@@ -493,7 +515,7 @@ function saveHist(item){
   try{localStorage.setItem("pf_hist",JSON.stringify(hist));}catch(e){}
 }
 
-function renderHist(){
+window.renderHist = function renderHist(){
   const el=document.getElementById("hcontent");
   if(!hist.length){el.innerHTML="<div class='hist-empty'>Nenhum prompt gerado ainda.</div>";return;}
   const L={ed:{name:"EDITORIAL",color:"#6a9fff"},ls:{name:"LIFESTYLE",color:"#ff8080"}};
