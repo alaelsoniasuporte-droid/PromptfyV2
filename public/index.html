@@ -443,15 +443,76 @@ function resetGerar(){
 }
 
 // ─── Geração de prompts ───────────────────────────────────────
-const BASE="ABSOLUTE RULES — NEVER INCLUDE IN THE PROMPT:\nHair color/type/style, eye color, skin tone, face shape, glasses, beard/mustache, earrings, facial piercings, ethnicity, apparent age, gender.\nNEVER use \"a man\",\"a woman\",\"a person with...\".\nThe Nano Banana AI automatically copies the person's face and body.\nOUTPUT: only the final prompt in English, single fluid paragraph. ZERO introduction, ZERO explanation.";
+const BASE_RULES = `
+CONTEXT: In Nano Banana, the user uploads a photo of their own face/body. The AI automatically copies all physical and facial characteristics of the person (face, hair, skin color, eyes, glasses, beard, body shape, etc). Therefore, the prompt you generate MUST NOT contain any physical/facial description. The prompt serves exclusively to direct everything else in the scene.
+
+NEVER INCLUDE IN THE PROMPT (EXCLUSION LIST):
+- Hair color, type, or style
+- Eye color
+- Skin color or tone
+- Face shape
+- Glasses
+- Beard, mustache, or facial hair
+- Earrings or facial piercings
+- Apparent age
+- Gender (unless it directly affects the described clothing)
+- Ethnicity or racial traits
+- Any description starting with "a man", "a woman", "a person with..."
+
+GOLDEN RULE: When in doubt whether something is a physical characteristic or a scene element — DO NOT INCLUDE IT.
+
+OUTPUT FORMAT:
+- Respond ONLY with the final prompt. Nothing else.
+- In English
+- A single fluid and dense paragraph
+- Start directly with pose/action → clothing → setting/lighting → visual style → aspect ratio
+- Always end with --ar RATIO
+- ZERO introductions, ZERO explanations, ZERO titles, ZERO analysis blocks
+- Your entire response must be only the prompt ready to copy and paste
+`;
+
+const ANALYSIS_STRUCTURE = `
+When you receive a reference image, analyze and extract ONLY these elements:
+
+1. POSE AND BODY LANGUAGE: exact body position (standing, sitting, leaning, in profile, 3/4, etc), arm/hand/leg positions, head angle (looking at camera, to the side, tilted), overall body language (confident, relaxed, dynamic, imposing).
+
+2. EXPRESSION AND EMOTION: facial expression (open smile, slight smile, serious, thoughtful, determined), gaze direction (directly at camera, looking up, to the side), energy/vibe transmitted.
+
+3. CLOTHING AND ACCESSORIES (NON-FACIAL): clothing items with detailed description (type, color, texture, drape, style), body accessories: watch, bracelet, necklace, ring, belt, bag. Footwear if visible. DO NOT include: glasses, earrings, facial piercings — these are personal characteristics.
+
+4. LIGHTING: light type (natural, studio, neon, golden hour, hard light, soft light), light direction (frontal, lateral, backlight, from above), light temperature (warm, cold, neutral), notable shadows and where they fall.
+
+5. SETTING AND BACKGROUND: environment (studio, street, nature, office, urban, etc), visible elements in the background, depth of field (blurred background, sharp, bokeh), predominant background color/tone.
+
+6. COMPOSITION AND FRAMING: shot type (close-up, half body, full body, American shot), camera angle (eye level, low angle, high angle), rule of thirds, centered, negative space, apparent focal length (wide angle, 50mm, telephoto/compression).
+
+7. COLOR PALETTE AND MOOD: dominant colors in the entire scene, overall tone (vibrant, desaturated, moody, clean, cinematic), contrast (high, low, medium), visual style (editorial photography, lifestyle, streetwear, corporate, cinematic).
+`;
 
 const SYS={
-  ed:"You are an expert in AI image generation prompt engineering. Generate an EDITORIAL style prompt: premium fashion magazine, dramatic studio lighting, neutral/minimalist background, rigorous composition, Vogue/Bazaar aesthetic.\nStructure: pose → detailed outfit → setting/lighting → visual style → end with --ar RATIO\n"+BASE,
-  ls:"You are an expert in AI image generation prompt engineering. Generate a LIFESTYLE style prompt: natural photography, real ambient light, authentic settings (street, café, park, urban), relaxed human vibe.\nStructure: pose → outfit → lifestyle setting → natural light → visual style → end with --ar RATIO\n"+BASE
+  ed:`You are an expert in prompt engineering for AI image generation. Your role is to analyze a reference image sent by the user and generate an optimized prompt for use in Nano Banana.
+
+${ANALYSIS_STRUCTURE}
+
+STYLE DIRECTION — EDITORIAL: Generate an EDITORIAL style prompt. Think premium fashion magazine, dramatic studio lighting, neutral/minimalist background, rigorous composition, Vogue/Harper's Bazaar aesthetic. High contrast, precise lighting, sophisticated clothing details.
+
+ASPECT RATIO: Default is 4:5. Only use another aspect ratio if explicitly requested. Always include at the end with format: --ar RATIO
+
+${BASE_RULES}`.replace(/RATIO/g,"RATIO"),
+
+  ls:`You are an expert in prompt engineering for AI image generation. Your role is to analyze a reference image sent by the user and generate an optimized prompt for use in Nano Banana.
+
+${ANALYSIS_STRUCTURE}
+
+STYLE DIRECTION — LIFESTYLE: Generate a LIFESTYLE style prompt. Think natural photography, real ambient light, authentic settings (street, café, park, urban environment), relaxed and human vibe. Candid feel, genuine moments, real-world environments.
+
+ASPECT RATIO: Default is 4:5. Only use another aspect ratio if explicitly requested. Always include at the end with format: --ar RATIO
+
+${BASE_RULES}`.replace(/RATIO/g,"RATIO")
 };
 
 async function callGemini(style){
-  const system=SYS[style].replace(/RATIO/g,ratio);
+  const system=SYS[style].replace(/RATIO/g,ratio).replace(/--ar RATIO/g,"--ar "+ratio);
   const resp=await fetch("/api/gemini",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({system,imageBase64:imgB64,imageType:imgType,ratio})});
   const data=await resp.json();
   if(data.error)throw new Error(data.error);
