@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Promptfy</title>
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script type="module" src="firebase.js"></script>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
@@ -412,13 +412,10 @@ async function callGemini(style){
 async function generate(){
   if(!imgB64)return;
 
-  // Admin bypass
+  // Verifica limite de prompts (admin tem bypass)
   const currentUser = window.fbAuth && window.fbAuth.currentUser;
-  if(currentUser && currentUser.email === "alaelsoniasuporte@gmail.com"){
-    // Admin — sem limite
-  } else {
-    // BUG 1 corrigido: contador salvo no Firestore quando possível,
-    // com fallback para localStorage caso o Firestore ainda não esteja pronto
+  const isAdmin = currentUser && currentUser.email === "alaelsoniasuporte@gmail.com";
+  if(!isAdmin){
     let usados = 0;
     try {
       if(currentUser && window.fbDoc && window.fbGetDoc){
