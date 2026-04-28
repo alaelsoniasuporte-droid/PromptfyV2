@@ -47,6 +47,13 @@ document.addEventListener("DOMContentLoaded", () => {
 onAuthStateChanged(auth, async (user) => {
   if (user) {
     await handleUsuario(user);
+  } else {
+    // Não logado — esconde o overlay e mostra tela de login
+    const overlay = document.getElementById("loading-overlay");
+    if(overlay){
+      overlay.classList.add("hide");
+      setTimeout(() => { overlay.style.display = "none"; }, 450);
+    }
   }
 });
 
