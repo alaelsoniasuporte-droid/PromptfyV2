@@ -15,26 +15,46 @@ app.post("/api/gemini", async (req, res) => {
 
   try {
     const { system, imageBase64, imageType, ratio } = req.body;
-    const prompt = system + "\n\nAspect ratio: " + ratio + "\n\nAnalyze this image and generate the prompt now.";
 
     const requestBody = {
-      contents: [{ parts: [{ inline_data: { mime_type: imageType, data: imageBase64 } }, { text: prompt }] }],
-      generationConfig: { temperature: 0.7, maxOutputTokens: 1000 },
+      // ✅ CORREÇÃO PRINCIPAL: system prompt no campo correto do Gemini
+      system_instruction: {
+        parts: [{ text: system }]
+      },
+      contents: [
+        {
+          role: "user",
+          parts: [
+            { inline_data: { mime_type: imageType, data: imageBase64 } },
+            { text: "Aspect ratio requested: " + ratio + "\n\nAnalyze this image and generate the prompt now. End with --ar " + ratio }
+          ]
+        }
+      ],
+      generationConfig: {
+        temperature: 0.7,
+        maxOutputTokens: 1000
+      }
     };
 
     const response = await fetch(
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=" + GEMINI_API_KEY,
-      { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(requestBody) }
+      {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestBody)
+      }
     );
 
     const data = await response.json();
 
     if (!response.ok) {
-      return res.status(response.status).json({ error: data.error.message || "Erro na API Gemini." });
+      return res.status(response.status).json({ error: data.error?.message || "Erro na API Gemini." });
     }
 
-    const text = data.candidates[0].content.parts[0].text || "";
+    // ✅ CORREÇÃO: optional chaining evita crash se resposta vier incompleta
+    const text = data.candidates?.[0]?.content?.parts?.[0]?.text || "";
     return res.status(200).json({ text: text.trim() });
+
   } catch (err) {
     return res.status(500).json({ error: "Erro interno: " + err.message });
   }
